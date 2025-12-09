@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/auth", "destination": "/api" },
+    { "source": "/api/course", "destination": "/api" },
+    { "source": "/api/checkout", "destination": "/api" }
+  ]
+}

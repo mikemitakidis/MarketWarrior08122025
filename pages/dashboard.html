@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Market Warrior</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f8fafc; min-height: 100vh; }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+        .header .logo { display: flex; align-items: center; gap: 12px; }
+        .header .logo img { height: 45px; border-radius: 8px; }
+        .header .logo span { font-size: 1.3em; font-weight: 700; }
+        .header .user { display: flex; align-items: center; gap: 15px; }
+        .header .logout { background: rgba(255,255,255,0.2); padding: 8px 20px; border-radius: 20px; color: white; text-decoration: none; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 30px; }
+        .payment-banner {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border: 3px solid #fbbf24;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 30px;
+            display: none;
+        }
+        .payment-banner h2 { color: #92400e; margin-bottom: 10px; }
+        .payment-banner p { color: #78350f; margin-bottom: 15px; }
+        .payment-banner .btn {
+            background: #f59e0b;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1.1em;
+        }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .stat-value { font-size: 2.5em; font-weight: 700; color: #667eea; }
+        .stat-label { color: #64748b; margin-top: 5px; }
+        .section-title { font-size: 1.5em; color: #1e293b; margin-bottom: 20px; }
+        .days-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 15px; margin-bottom: 40px; }
+        .day {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .day:hover { transform: translateY(-3px); }
+        .day.locked { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+        .day.current { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .day.completed { background: #d1fae5; color: #059669; }
+        .day-number { font-size: 1.5em; font-weight: 700; }
+        .day-status { font-size: 0.85em; margin-top: 5px; }
+        .affiliate-section {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+        .affiliate-section h3 { color: #92400e; margin-bottom: 15px; }
+        .affiliate-link {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .affiliate-link input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #fbbf24;
+            border-radius: 8px;
+            font-family: monospace;
+        }
+        .affiliate-link button {
+            background: #f59e0b;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .affiliate-earnings { color: #78350f; font-size: 1.1em; }
+        .affiliate-earnings strong { font-size: 1.5em; color: #92400e; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <img src="/assets/logo.png" alt="Market Warrior">
+            <span>Market Warrior</span>
+        </div>
+        <div class="user">
+            <span id="userName">Loading...</span>
+            <a href="#" class="logout" onclick="logout()">Logout</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="paymentBanner" class="payment-banner">
+            <h2>🔒 Unlock Full Course Access</h2>
+            <p>Get access to all 30 days of content, quizzes, and your official certificate!</p>
+            <button class="btn" onclick="checkout()">Unlock All Days - $39.99</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="currentDay">1</div>
+                <div class="stat-label">Current Day</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="completedDays">0</div>
+                <div class="stat-label">Days Completed</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="avgScore">0%</div>
+                <div class="stat-label">Avg Quiz Score</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="earnings">$0</div>
+                <div class="stat-label">Affiliate Earnings</div>
+            </div>
+        </div>
+
+        <h2 class="section-title">Your 30-Day Journey</h2>
+        <div class="days-grid" id="daysGrid"></div>
+
+        <div class="affiliate-section">
+            <h3>💰 Your Affiliate Link</h3>
+            <p style="color: #78350f; margin-bottom: 15px;">Earn 25% commission ($10) for every friend who joins!</p>
+            <div class="affiliate-link">
+                <input type="text" id="affiliateLink" readonly>
+                <button onclick="copyLink()">Copy</button>
+            </div>
+            <p class="affiliate-earnings">Total Earnings: <strong id="totalEarnings">$0.00</strong></p>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/pages/auth/login.html';
+        }
+
+        // Check for payment success
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('payment') === 'success') {
+            alert('🎉 Payment successful! All days are now unlocked!');
+            history.replaceState({}, '', '/pages/dashboard.html');
+        }
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/api?action=progress', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await response.json();
+
+                if (!data.success) {
+                    if (data.error === 'Invalid token' || data.error === 'User not found') {
+                        localStorage.clear();
+                        window.location.href = '/pages/auth/login.html';
+                        return;
+                    }
+                    throw new Error(data.error);
+                }
+
+                const user = data.user;
+                const progress = data.progress || [];
+                const stats = data.stats;
+
+                // Update UI
+                document.getElementById('userName').textContent = user.full_name;
+                document.getElementById('currentDay').textContent = stats.currentDay;
+                document.getElementById('completedDays').textContent = stats.completedDays;
+                document.getElementById('avgScore').textContent = stats.averageScore + '%';
+                document.getElementById('earnings').textContent = '$' + (user.affiliate_earnings || 0).toFixed(2);
+                document.getElementById('totalEarnings').textContent = '$' + (user.affiliate_earnings || 0).toFixed(2);
+                document.getElementById('affiliateLink').value = window.location.origin + '/pages/auth/register.html?ref=' + user.affiliate_code;
+
+                // Show payment banner if not paid
+                if (user.payment_status !== 'paid') {
+                    document.getElementById('paymentBanner').style.display = 'block';
+                }
+
+                // Build days grid
+                const grid = document.getElementById('daysGrid');
+                grid.innerHTML = '';
+
+                for (let i = 1; i <= 30; i++) {
+                    const dayProgress = progress.find(p => p.day_number === i);
+                    const isUnlocked = dayProgress !== undefined;
+                    const isCompleted = dayProgress?.completed_at;
+                    const isPaid = user.payment_status === 'paid';
+
+                    const div = document.createElement('div');
+                    div.className = 'day';
+
+                    if (isCompleted) {
+                        div.className += ' completed';
+                        div.innerHTML = `<div class="day-number">${i}</div><div class="day-status">✓ Done</div>`;
+                    } else if (isUnlocked) {
+                        div.className += ' current';
+                        div.innerHTML = `<div class="day-number">${i}</div><div class="day-status">Current</div>`;
+                    } else if (i === 1 || isPaid) {
+                        div.innerHTML = `<div class="day-number">${i}</div><div class="day-status">Start</div>`;
+                    } else {
+                        div.className += ' locked';
+                        div.innerHTML = `<div class="day-number">${i}</div><div class="day-status">🔒</div>`;
+                    }
+
+                    div.onclick = () => {
+                        if (i === 1 || isUnlocked || isPaid) {
+                            window.location.href = '/pages/course/day' + i + '.html';
+                        } else {
+                            alert('Complete the previous day first, or unlock all days for $39.99');
+                        }
+                    };
+
+                    grid.appendChild(div);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error loading dashboard: ' + error.message);
+            }
+        }
+
+        async function checkout() {
+            try {
+                const response = await fetch('/api?action=checkout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                const data = await response.json();
+                if (data.success && data.url) {
+                    window.location.href = data.url;
+                } else {
+                    alert('Checkout error: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Connection error');
+            }
+        }
+
+        function copyLink() {
+            const input = document.getElementById('affiliateLink');
+            input.select();
+            document.execCommand('copy');
+            alert('Link copied!');
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+
+        loadDashboard();
+    </script>
+</body>
+</html>

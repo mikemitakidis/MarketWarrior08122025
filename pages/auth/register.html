@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Market Warrior</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 25px;
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
+        }
+        .logo { text-align: center; margin-bottom: 30px; }
+        .logo img { height: 80px; border-radius: 10px; margin-bottom: 15px; }
+        .logo h1 { color: #667eea; font-size: 1.8em; }
+        .logo p { color: #64748b; margin-top: 5px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #1e293b; }
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1em;
+        }
+        .form-group input:focus { outline: none; border-color: #667eea; }
+        .checkbox { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 20px; }
+        .checkbox input { margin-top: 4px; width: 20px; height: 20px; }
+        .checkbox label { font-size: 0.95em; color: #475569; line-height: 1.5; }
+        .checkbox a { color: #667eea; }
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .message { padding: 14px; border-radius: 10px; margin-bottom: 20px; display: none; font-weight: 500; }
+        .message.error { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; display: block; }
+        .message.success { background: #d1fae5; color: #059669; border: 1px solid #a7f3d0; display: block; }
+        .links { text-align: center; margin-top: 25px; padding-top: 25px; border-top: 1px solid #e2e8f0; }
+        .links a { color: #667eea; text-decoration: none; font-weight: 600; }
+        .referral-box {
+            background: linear-gradient(135deg, #fef3c7, #fde68a);
+            padding: 15px; border-radius: 12px; margin-bottom: 20px;
+            border: 2px solid #fbbf24; display: none;
+        }
+        .referral-box p { color: #92400e; font-weight: 600; margin-bottom: 10px; }
+        .referral-box input { width: 100%; padding: 10px; border: 2px solid #fbbf24; border-radius: 8px; background: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="/assets/logo.png" alt="Market Warrior">
+            <h1>Create Account</h1>
+            <p>Start your 30-day trading journey</p>
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <form id="registerForm">
+            <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text" id="full_name" required placeholder="Enter your full name">
+            </div>
+            
+            <div class="form-group">
+                <label>Email Address *</label>
+                <input type="email" id="email" required placeholder="your@email.com">
+            </div>
+            
+            <div class="form-group">
+                <label>Password *</label>
+                <input type="password" id="password" required minlength="6" placeholder="Minimum 6 characters">
+            </div>
+            
+            <div id="referralBox" class="referral-box">
+                <p>🎁 You were referred by a friend!</p>
+                <input type="text" id="referral_code" readonly>
+            </div>
+            
+            <div class="checkbox">
+                <input type="checkbox" id="gdpr_consent" required>
+                <label for="gdpr_consent">
+                    I agree to the <a href="/pages/terms.html" target="_blank">Terms</a> and 
+                    <a href="/pages/privacy.html" target="_blank">Privacy Policy</a>.
+                </label>
+            </div>
+            
+            <button type="submit" class="btn" id="submitBtn">Create Account</button>
+        </form>
+        
+        <div class="links">
+            <p style="color: #64748b; margin-bottom: 10px;">Already have an account?</p>
+            <a href="/pages/auth/login.html">Login here</a>
+            <p style="margin-top: 15px;"><a href="/">← Back to Home</a></p>
+        </div>
+    </div>
+
+    <script>
+        // Check for referral code
+        const params = new URLSearchParams(window.location.search);
+        const ref = params.get('ref');
+        if (ref) {
+            document.getElementById('referralBox').style.display = 'block';
+            document.getElementById('referral_code').value = ref;
+        }
+        
+        // Form submission
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const msg = document.getElementById('message');
+            const btn = document.getElementById('submitBtn');
+            
+            btn.disabled = true;
+            btn.textContent = 'Creating account...';
+            msg.className = 'message';
+            
+            const data = {
+                full_name: document.getElementById('full_name').value.trim(),
+                email: document.getElementById('email').value.trim().toLowerCase(),
+                password: document.getElementById('password').value,
+                referral_code: document.getElementById('referral_code').value || null,
+                gdpr_consent: document.getElementById('gdpr_consent').checked
+            };
+            
+            try {
+                const response = await fetch('/api?action=register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    localStorage.setItem('token', result.token);
+                    localStorage.setItem('user', JSON.stringify(result.user));
+                    
+                    msg.textContent = '✓ Account created! Redirecting...';
+                    msg.className = 'message success';
+                    
+                    setTimeout(() => window.location.href = '/pages/dashboard.html', 1500);
+                } else {
+                    msg.textContent = result.error || 'Registration failed';
+                    msg.className = 'message error';
+                    btn.disabled = false;
+                    btn.textContent = 'Create Account';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                msg.textContent = 'Connection error. Please try again.';
+                msg.className = 'message error';
+                btn.disabled = false;
+                btn.textContent = 'Create Account';
+            }
+        });
+    </script>
+</body>
+</html>
